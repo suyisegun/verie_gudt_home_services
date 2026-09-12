@@ -11,7 +11,7 @@ A Next.js App Router site for Verie Gudt Home Services (permanent roofline LED l
 1. A single-page marketing site (scaffolded/exported from v0.app) whose quote-request form posts real leads to the database.
 2. A password-protected lead-management portal at `/portal` that also receives leads pushed from Facebook Lead Ads via webhook.
 
-This is not a git repository.
+Git remote: `github.com/suyisegun/verie_gudt_home_services` (branch `main`). Deployed on Vercel (project `verie-gudt-home-services`, team `suyisegun-9071s-projects`), auto-deploying to production on every push to `main` via Vercel's GitHub integration — no manual deploy step needed. Live at `verie-gudt-home-services.vercel.app`. Environment variables (`DATABASE_URL`, `SESSION_SECRET`, `PORTAL_ADMIN_EMAIL`, `PORTAL_ADMIN_PASSWORD_HASH`, `FB_*`) are set directly in the Vercel dashboard (Project → Settings → Environment Variables) — there's no CLI/MCP tool that manages them, so they must be edited there by hand. Preview deployments sit behind Vercel's own SSO wall (team members only); production does not, by design (`update_project_deployment_protection` was used to scope `ssoProtection` to `preview` only) — that's separate from and in addition to the portal's own app-level login.
 
 ## Commands
 
