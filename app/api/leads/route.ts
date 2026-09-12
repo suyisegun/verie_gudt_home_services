@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 }
 
 const listQuerySchema = z.object({
-  source: z.enum(['WEBSITE', 'FACEBOOK']).optional(),
+  source: z.enum(['WEBSITE', 'FACEBOOK', 'MANUAL']).optional(),
   status: z.enum(['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST']).optional(),
   q: z.string().trim().max(200).optional(),
   cursor: z.string().optional(),

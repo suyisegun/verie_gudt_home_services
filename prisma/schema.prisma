@@ -9,6 +9,7 @@ datasource db {
 enum LeadSource {
   WEBSITE
   FACEBOOK
+  MANUAL
 }
 
 enum LeadStatus {

@@ -48,7 +48,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             </dl>
           </div>
 
-          {lead.source === 'WEBSITE' ? (
+          {lead.source !== 'FACEBOOK' ? (
             <div className="rounded-2xl border border-border bg-card p-5">
               <h2 className="text-sm font-semibold">Project details</h2>
               <dl className="mt-3 space-y-2 text-sm text-muted-foreground">

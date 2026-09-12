@@ -28,6 +28,7 @@ export function LeadFilters({ source, status, q }: { source?: string; status?: s
           <option value="">All sources</option>
           <option value="WEBSITE">Website</option>
           <option value="FACEBOOK">Facebook</option>
+          <option value="MANUAL">Manual</option>
         </select>
       </div>
       <div>

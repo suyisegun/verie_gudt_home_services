@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Sora } from 'next/font/google'
+import { EnvironmentBadge } from '@/components/environment-badge'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
@@ -51,6 +52,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${sora.variable} bg-background`}>
       <body className="antialiased">
         {children}
+        <EnvironmentBadge />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
