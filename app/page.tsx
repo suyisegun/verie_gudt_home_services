@@ -6,6 +6,7 @@ import { DayNightCompare } from '@/components/day-night-compare'
 import { Features } from '@/components/features'
 import { HowItWorks } from '@/components/how-it-works'
 import { Testimonials } from '@/components/testimonials'
+import { ServiceAreas } from '@/components/service-areas'
 import { FAQs } from '@/components/faqs'
 import { QuoteForm } from '@/components/quote-form'
 import { SiteFooter } from '@/components/site-footer'
@@ -23,6 +24,7 @@ export default function Page() {
         <HowItWorks />
         <QuoteForm />
         <Testimonials />
+        <ServiceAreas />
         <FAQs />
       </main>
       <SiteFooter />

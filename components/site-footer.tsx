@@ -1,6 +1,7 @@
 import { Phone, Mail, MapPin } from 'lucide-react'
+import { joinCitiesForDisplay, SERVICE_CITIES, SITE_LOGO_URL } from '@/lib/site'
 
-const logoUrl = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/VGHMlogo-R3UA1mAtU9EJASOrjAHbjEKckfoXP9.png'
+const logoUrl = SITE_LOGO_URL
 
 export function SiteFooter() {
   return (
@@ -13,6 +14,7 @@ export function SiteFooter() {
                 src={logoUrl}
                 alt="Verie Gudt Home Services logo"
                 className="h-9 w-9 rounded-lg object-cover"
+                loading="lazy"
               />
               <span className="font-heading text-base font-semibold leading-tight">
                 Verie Gudt
@@ -34,6 +36,7 @@ export function SiteFooter() {
               <li><a href="#scenes" className="hover:text-foreground">Scenes</a></li>
               <li><a href="#features" className="hover:text-foreground">Features</a></li>
               <li><a href="#reviews" className="hover:text-foreground">Reviews</a></li>
+              <li><a href="#service-areas" className="hover:text-foreground">Service Areas</a></li>
               <li><a href="#faqs" className="hover:text-foreground">FAQs</a></li>
             </ul>
           </div>
@@ -53,7 +56,7 @@ export function SiteFooter() {
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>Serving the greater metro area</span>
+                <span>Serving {joinCitiesForDisplay(SERVICE_CITIES)}</span>
               </li>
             </ul>
           </div>

@@ -50,6 +50,7 @@ export function Scenes() {
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 width={480}
                 height={360}
+                loading="lazy"
               />
             </div>
             <div className="p-6">

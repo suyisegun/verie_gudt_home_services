@@ -1,6 +1,7 @@
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Star, ShieldCheck } from 'lucide-react'
+import { joinCitiesForDisplay, SERVICE_CITIES } from '@/lib/site'
+import { MapPin, Star, ShieldCheck } from 'lucide-react'
 
 export function Hero() {
   return (
@@ -20,6 +21,11 @@ export function Hero() {
             Verie Gudt Home Services installs beautiful, permanent roofline LED lighting installed
             once, and enjoyed for years. Warm white for everyday, millions of colors for holidays and
             game days.
+          </p>
+
+          <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 text-primary" />
+            Proudly serving {joinCitiesForDisplay(SERVICE_CITIES)}
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -59,6 +65,8 @@ export function Hero() {
               className="h-full w-full object-cover"
               width={720}
               height={720}
+              loading="eager"
+              fetchPriority="high"
             />
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/70 to-transparent" />
           </div>

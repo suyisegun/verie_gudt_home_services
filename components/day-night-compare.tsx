@@ -78,6 +78,7 @@ export function DayNightCompare() {
           width={1600}
           height={900}
           draggable={false}
+          loading="lazy"
         />
 
         {/* Day image — same full-container size as the night image behind it, just visually
@@ -93,6 +94,7 @@ export function DayNightCompare() {
           width={1600}
           height={900}
           draggable={false}
+          loading="lazy"
         />
 
         {/* Full-area pointer target for dragging anywhere in the frame */}
