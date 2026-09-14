@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Check, ChevronLeft, ChevronRight, MapPin, Phone } from 'lucide-react'
@@ -36,36 +36,73 @@ const initialValues: FormValues = {
   address: '',
 }
 
+type AddressSuggestion = { placeId: string; text: string }
+
 export function QuoteForm() {
   const [step, setStep] = useState(1)
   const [values, setValues] = useState(initialValues)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const addressRef = useRef<HTMLInputElement>(null)
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
-  useEffect(() => {
+  // Google retired the legacy Autocomplete JS widget for new Cloud projects (March 2025) — this
+  // calls the newer Places Autocomplete REST endpoint directly instead, which also means we can
+  // render suggestions in our own dropdown rather than fighting the widget's shadow-DOM styling.
+  const sessionTokenRef = useRef('')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function ensureSessionToken() {
+    if (!sessionTokenRef.current) sessionTokenRef.current = crypto.randomUUID()
+    return sessionTokenRef.current
+  }
+
+  async function fetchAddressSuggestions(input: string) {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!apiKey || document.querySelector('script[data-google-places]')) return
-
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
-    script.async = true
-    script.dataset.googlePlaces = 'true'
-    script.onload = () => {
-      const google = window.google
-      if (!google || !addressRef.current) return
-      const autocomplete = new google.maps.places.Autocomplete(addressRef.current, {
-        types: ['address'],
-        fields: ['formatted_address'],
-      })
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
-        if (place.formatted_address) updateValue('address', place.formatted_address)
-      })
+    if (!apiKey || input.trim().length < 4) {
+      setAddressSuggestions([])
+      return
     }
-    document.head.appendChild(script)
-  }, [])
+    try {
+      const response = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': apiKey },
+        body: JSON.stringify({
+          input,
+          includedPrimaryTypes: ['street_address', 'premise', 'subpremise'],
+          sessionToken: ensureSessionToken(),
+        }),
+      })
+      if (!response.ok) {
+        setAddressSuggestions([])
+        return
+      }
+      const body = await response.json()
+      type Suggestion = { placePrediction?: { placeId: string; text?: { text: string } } }
+      const suggestions: AddressSuggestion[] = (body.suggestions ?? [])
+        .map((s: Suggestion) => s.placePrediction)
+        .filter((p: Suggestion['placePrediction']): p is NonNullable<Suggestion['placePrediction']> => !!p)
+        .map((p: NonNullable<Suggestion['placePrediction']>) => ({ placeId: p.placeId, text: p.text?.text ?? '' }))
+      setAddressSuggestions(suggestions)
+    } catch {
+      setAddressSuggestions([])
+    }
+  }
+
+  function handleAddressChange(value: string) {
+    updateValue('address', value)
+    setShowSuggestions(true)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => fetchAddressSuggestions(value), 250)
+  }
+
+  function selectAddressSuggestion(suggestion: AddressSuggestion) {
+    updateValue('address', suggestion.text)
+    setAddressSuggestions([])
+    setShowSuggestions(false)
+    sessionTokenRef.current = ''
+  }
 
   function updateValue(key: keyof FormValues, value: string) {
     setValues((current) => ({ ...current, [key]: value }))
@@ -165,7 +202,36 @@ export function QuoteForm() {
                   <label htmlFor="address" className="mb-1.5 block text-sm font-medium">Home address</label>
                   <div className="relative">
                     <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input ref={addressRef} id="address" name="address" type="text" value={values.address} onChange={(event) => updateValue('address', event.target.value)} placeholder="123 Main St, Your City" autoComplete="street-address" required className="w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-3.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30" />
+                    <input
+                      id="address"
+                      name="address"
+                      type="text"
+                      value={values.address}
+                      onChange={(event) => handleAddressChange(event.target.value)}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      placeholder="123 Main St, Your City"
+                      autoComplete="off"
+                      required
+                      className="w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-3.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+                    />
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                        {addressSuggestions.map((suggestion) => (
+                          <li key={suggestion.placeId}>
+                            <button
+                              type="button"
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => selectAddressSuggestion(suggestion)}
+                              className="flex w-full items-center gap-2 px-3.5 py-2 text-left text-sm hover:bg-muted"
+                            >
+                              <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                              {suggestion.text}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <p className="mt-1.5 text-xs text-muted-foreground">Start typing for address suggestions, or enter it manually.</p>
                 </div>
@@ -207,10 +273,4 @@ function Field({ id, label, value, onChange, type, placeholder, required }: { id
       <input id={id} name={id} type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} required={required} className="w-full rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30" />
     </div>
   )
-}
-
-declare global {
-  interface Window {
-    google?: any
-  }
 }
