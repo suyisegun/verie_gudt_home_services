@@ -1,0 +1,19 @@
+name: Poll Facebook leads
+
+# Fallback for real-time webhook delivery, which Meta gates behind App Review (Advanced Access
+# for leads_retrieval). Runs far more often than Vercel's Hobby-plan Cron Jobs allow (once/day),
+# so leads don't sit unseen for a full day while that review is pending.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call polling endpoint
+        run: |
+          curl -sf -w "\nHTTP %{http_code}\n" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://veriegudt.homes/api/cron/poll-facebook-leads"

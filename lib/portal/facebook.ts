@@ -50,6 +50,53 @@ export async function fetchFacebookLead(leadgenId: string): Promise<FacebookLead
   return res.json()
 }
 
+export type FacebookLeadgenForm = { id: string; name: string; status: string }
+
+/** Lists the Page's Lead Ads forms — used by the polling fallback to know which forms to check. */
+export async function fetchLeadgenForms(pageId: string): Promise<FacebookLeadgenForm[]> {
+  const accessToken = process.env.FB_PAGE_ACCESS_TOKEN
+  if (!accessToken) {
+    throw new Error('FB_PAGE_ACCESS_TOKEN is not configured.')
+  }
+
+  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${pageId}/leadgen_forms`)
+  url.searchParams.set('fields', 'id,name,status')
+  url.searchParams.set('access_token', accessToken)
+
+  const res = await fetch(url, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Facebook Graph API error (${res.status}): ${text}`)
+  }
+  const body = (await res.json()) as { data: FacebookLeadgenForm[] }
+  return body.data
+}
+
+/**
+ * Fetches a form's most recent leads directly (as opposed to via webhook). Used by the polling
+ * fallback, so it only needs a reasonable recent window — dedup against existing fbLeadId handles
+ * overlap between runs.
+ */
+export async function fetchFormLeads(formId: string, limit = 25): Promise<FacebookLeadResponse[]> {
+  const accessToken = process.env.FB_PAGE_ACCESS_TOKEN
+  if (!accessToken) {
+    throw new Error('FB_PAGE_ACCESS_TOKEN is not configured.')
+  }
+
+  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${formId}/leads`)
+  url.searchParams.set('fields', 'id,created_time,form_id,field_data')
+  url.searchParams.set('limit', String(limit))
+  url.searchParams.set('access_token', accessToken)
+
+  const res = await fetch(url, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Facebook Graph API error (${res.status}): ${text}`)
+  }
+  const body = (await res.json()) as { data: FacebookLeadResponse[] }
+  return body.data
+}
+
 const NAME_FIELDS = ['full_name', 'name']
 const FIRST_NAME_FIELDS = ['first_name']
 const LAST_NAME_FIELDS = ['last_name']
